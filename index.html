@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Smart Virtual Art Gallery</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0f1724;
+    --card:#0b1220;
+    --muted:#9aa4b2;
+    --accent1:#ff6b6b;
+    --accent2:#7c5cff;
+    --glass: rgba(255,255,255,0.06);
+    --glass-2: rgba(255,255,255,0.03);
+    --radius:14px;
+    --max-width:1100px;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;
+    font-family:Inter,system-ui,Arial,sans-serif;
+    background:linear-gradient(180deg,#071025 0%, #0b1530 60%);
+    color:#e6eef6;
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+    line-height:1.45;
+    padding-bottom:60px;
+  }
+
+  /* Container */
+  .wrap{
+    max-width:var(--max-width);
+    margin:32px auto;
+    padding:20px;
+  }
+
+  /* Header / Navigation */
+  header.top {
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:16px;
+    margin-bottom:28px;
+  }
+  .brand {
+    display:flex;
+    gap:12px;
+    align-items:center;
+    text-decoration:none;
+    color:inherit;
+  }
+  .logo {
+    width:48px;height:48px;border-radius:12px;
+    background:linear-gradient(135deg,var(--accent2),var(--accent1));
+    display:flex;align-items:center;justify-content:center;
+    font-weight:800;color:white;font-size:18px;box-shadow:0 6px 18px rgba(124,92,255,0.18);
+  }
+  .brand h1{font-size:1.05rem;margin:0}
+  .brand p{margin:0;color:var(--muted);font-size:0.85rem}
+
+  nav.topnav{display:flex;gap:10px;align-items:center}
+  nav.topnav a{
+    color:var(--muted); text-decoration:none; padding:8px 12px;border-radius:10px;
+    font-weight:600;font-size:0.95rem;
+  }
+  nav.topnav a.primary{
+    background:linear-gradient(90deg,var(--accent2),var(--accent1));
+    color:white; box-shadow:0 6px 20px rgba(255,107,107,0.08);
+  }
+  nav.topnav a:hover{opacity:0.95}
+
+  /* Hero */
+  .hero{
+    display:grid;
+    grid-template-columns:1fr 420px;
+    gap:28px;
+    align-items:stretch;
+    margin-bottom:30px;
+  }
+  .card-hero{
+    background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));
+    border-radius:var(--radius); padding:28px; box-shadow:0 10px 30px rgba(2,6,23,0.6);
+    border:1px solid rgba(255,255,255,0.03);
+  }
+  .hero h2{font-size:1.8rem;margin:0 0 8px;}
+  .hero p{color:var(--muted);margin-bottom:18px}
+  .hero .cta {display:flex;gap:12px}
+  .btn{
+    background:linear-gradient(90deg,var(--accent2),var(--accent1));
+    padding:10px 16px;border-radius:10px;color:white;font-weight:700;border:none;cursor:pointer;
+    box-shadow:0 8px 24px rgba(124,92,255,0.12);
+  }
+  .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--muted);font-weight:600}
+
+  /* Right hero panel: quick stats */
+  .quick{
+    background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    border-radius:var(--radius); padding:18px; border:1px solid rgba(255,255,255,0.03);
+    display:flex;flex-direction:column;gap:12px;
+  }
+  .stat{display:flex;align-items:center;justify-content:space-between;font-weight:700}
+  .stat small{color:var(--muted);font-weight:600}
+
+  /* Search / Filter */
+  .search-row{display:flex;gap:12px;align-items:center;margin-top:14px}
+  .search{
+    flex:1;background:var(--glass);border-radius:12px;padding:8px 12px;display:flex;gap:8px;align-items:center;border:1px solid rgba(255,255,255,0.02)
+  }
+  .search input{background:transparent;border:none;outline:none;color:inherit;font-size:0.95rem;width:100%}
+  .filters{display:flex;gap:8px;align-items:center}
+
+  /* Gallery */
+  .section {
+    margin-top:18px;
+  }
+  .gallery-grid{
+    margin-top:18px;
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
+    gap:18px;
+  }
+  .card{
+    background:linear-gradient(180deg, rgba(255,255,255,0.015), rgba(255,255,255,0.01));
+    border-radius:12px; overflow:hidden; position:relative; border:1px solid rgba(255,255,255,0.03);
+    transition:transform .25s ease, box-shadow .25s ease;
+  }
+  .card:hover{transform:translateY(-6px); box-shadow:0 20px 40px rgba(2,6,23,0.6);}
+  .thumb{width:100%;height:160px;object-fit:cover;display:block;background:#0a0f18}
+  .card-body{padding:12px}
+  .title{font-weight:700;margin-bottom:8px}
+  .meta{color:var(--muted);font-size:0.9rem;margin-bottom:10px}
+  .card-actions{display:flex;justify-content:space-between;align-items:center;gap:8px}
+  .vote{background:rgba(255,255,255,0.04);color:var(--accent1);padding:8px 10px;border-radius:10px;border:1px solid rgba(255,107,107,0.12);font-weight:700;cursor:pointer}
+  .buy{background:linear-gradient(90deg,var(--accent2),var(--accent1));color:#fff;padding:8px 12px;border-radius:10px;border:none;font-weight:700;cursor:pointer}
+
+  /* Small badge */
+  .badge{
+    position:absolute;left:12px;top:12px;background:rgba(0,0,0,0.45);padding:6px 10px;border-radius:999px;font-weight:700;font-size:0.85rem;color:#fff;
+    display:flex;gap:8px;align-items:center;border:1px solid rgba(255,255,255,0.03)
+  }
+
+  /* Upload button */
+  .fab{
+    position:fixed;right:22px;bottom:22px;background:linear-gradient(90deg,var(--accent2),var(--accent1));padding:14px;border-radius:14px;color:white;font-weight:800;border:none;cursor:pointer;box-shadow:0 18px 40px rgba(124,92,255,0.14)
+  }
+
+  /* Modal */
+  .modal-back{position:fixed;inset:0;background:rgba(1,6,15,0.6);display:flex;align-items:center;justify-content:center;z-index:200}
+  .modal{background:linear-gradient(180deg, #071026, #081228);border-radius:14px;padding:20px;max-width:520px;width:92%;border:1px solid rgba(255,255,255,0.04);box-shadow:0 30px 80px rgba(3,8,20,0.8)}
+  .modal h3{margin-top:0}
+  .form-row{display:flex;flex-direction:column;gap:10px;margin-top:8px}
+  .field{background:transparent;border:1px solid rgba(255,255,255,0.06);padding:10px;border-radius:8px;color:inherit}
+  .modal .actions{display:flex;gap:10px;justify-content:flex-end;margin-top:14px}
+
+  /* footer */
+  footer.pagefoot{margin-top:36px;padding:24px;text-align:center;color:var(--muted);font-size:0.95rem}
+
+  /* responsive */
+  @media (max-width:980px){
+    .hero{grid-template-columns:1fr}
+    .quick{order:-1}
+    .brand h1{font-size:1rem}
+  }
+  @media (max-width:560px){
+    .thumb{height:140px}
+    nav.topnav a{padding:8px}
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="top">
+    <a class="brand" href="#">
+      <div class="logo">VG</div>
+      <div>
+        <h1>Virtual Gallery</h1>
+        <p>student • creative • marketplace</p>
+      </div>
+    </a>
+
+    <nav class="topnav" aria-label="Main navigation">
+      <a href="#" class="primary" id="gotoGalleryBtn">Visit Gallery</a>
+      <a href="#" id="openUploadBtn">Upload</a>
+      <a href="#" id="openAbout">About</a>
+    </nav>
+  </header>
+
+  <section class="hero">
+    <div class="card-hero">
+      <h2>Discover student creativity — vote & support</h2>
+      <p>Welcome! Browse original digital art and photography made by students. Vote for favorites, buy prints, or upload your own work.</p>
+
+      <div class="search-row">
+        <div class="search" title="Search artworks by title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="opacity:.8"><path d="M21 21l-4.35-4.35" stroke="#cfd8e3" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="11" cy="11" r="6" stroke="#cfd8e3" stroke-width="1.6"/></svg>
+          <input id="searchInput" placeholder="Search artworks or artists..." />
+        </div>
+
+        <div class="filters">
+          <select id="sortSelect" class="field" style="padding:8px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:var(--muted)">
+            <option value="latest">Sort: Latest</option>
+            <option value="popular">Sort: Most Voted</option>
+            <option value="price-low">Price: Low to High</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="margin-top:18px" class="cta">
+        <button class="btn" id="visitBtn">Explore Gallery</button>
+        <button class="btn ghost" id="learnMore">How it works</button>
+      </div>
+
+      <div style="display:flex;gap:14px;margin-top:18px;color:var(--muted);font-weight:600">
+        <div style="flex:1;padding:12px;border-radius:12px;background:var(--glass);border:1px solid rgba(255,255,255,0.02)">
+          <div style="font-size:0.9rem;color:var(--muted)">Artists</div>
+          <div style="font-size:1.2rem">120+</div>
+        </div>
+        <div style="flex:1;padding:12px;border-radius:12px;background:var(--glass);border:1px solid rgba(255,255,255,0.02)">
+          <div style="font-size:0.9rem;color:var(--muted)">Works</div>
+          <div style="font-size:1.2rem">420+</div>
+        </div>
+      </div>
+    </div>
+
+    <aside class="quick">
+      <div class="stat"><small>Top Voted</small><div id="topVoted" style="font-weight:800">—</div></div>
+      <div class="stat"><small>Latest Upload</small><div id="latest" style="font-weight:800">—</div></div>
+      <div style="margin-top:6px;color:var(--muted);font-size:0.95rem">Tip: Click <strong>Vote</strong> to support artists. Use <strong>Upload</strong> to add your work.</div>
+    </aside>
+  </section>
+
+  <section class="section" id="gallerySection" aria-label="Gallery section">
+    <h2>Gallery</h2>
+    <div id="emptyMsg" style="color:var(--muted);display:none;">No artworks found. Upload the first piece!</div>
+    <div class="gallery-grid" id="galleryGrid" aria-live="polite"></div>
+  </section>
+
+  <footer class="pagefoot">
+    <div>© <span id="year"></span> Virtual Gallery — Made with ♥ for students</div>
+  </footer>
+</div>
+
+<!-- Floating Upload FAB -->
+<button class="fab" id="fabUpload" title="Upload artwork">＋ Upload</button>
+
+<!-- Upload Modal -->
+<div id="uploadModal" style="display:none;">
+  <div class="modal-back" id="uploadBack">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="uploadTitle">
+      <h3 id="uploadTitle">Upload Artwork</h3>
+      <div class="form-row">
+        <input class="field" id="uName" placeholder="Your Name (Artist)" />
+        <input class="field" id="uTitle" placeholder="Artwork Title" />
+        <input class="field" id="uImage" placeholder="Image URL (https://...)" />
+        <input class="field" id="uPrice" placeholder="Price (USD)" type="number" min="1" />
+      </div>
+      <div class="actions">
+        <button class="btn ghost" id="closeUpload">Cancel</button>
+        <button class="btn" id="submitUpload">Upload</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Buy Modal placeholder -->
+<div id="buyModal" style="display:none;"></div>
+
+<script>
+/* ======= Smart Gallery JS ======= */
+/* Data persistence key */
+const STORAGE_KEY = 'smart_gallery_artworks_v1';
+
+/* Default artworks (first-run) */
+const DEFAULTS = [
+  { id: genId(), title: "Sunset Bliss", artist: "R. Kumar", img: "https://picsum.photos/520/360?random=1", votes: 8, price: 15 },
+  { id: genId(), title: "Mountain Peak", artist: "S. Meena", img: "https://picsum.photos/520/360?random=2", votes: 5, price: 20 },
+  { id: genId(), title: "Urban Life", artist: "A. Rahman", img: "https://picsum.photos/520/360?random=3", votes: 3, price: 18 },
+  { id: genId(), title: "Abstract Colors", artist: "K. Priya", img: "https://picsum.photos/520/360?random=4", votes: 11, price: 22 }
+];
+
+/* Load from localStorage or use defaults */
+function loadArtworks(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(!raw) { localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULTS)); return DEFAULTS.slice(); }
+    return JSON.parse(raw);
+  } catch(e){
+    console.error('load error',e);
+    return DEFAULTS.slice();
+  }
+}
+function saveArtworks(list){
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(list)); }catch(e){console.error('save error',e)}
+}
+
+/* Helpers */
+function genId(){ return 'a'+Math.random().toString(36).slice(2,9); }
+function $(sel){return document.querySelector(sel)}
+function $all(sel){return Array.from(document.querySelectorAll(sel))}
+
+/* State */
+let artworks = loadArtworks();
+
+/* DOM refs */
+const galleryGrid = $('#galleryGrid');
+const emptyMsg = $('#emptyMsg');
+const yearSpan = $('#year');
+const searchInput = $('#searchInput');
+const sortSelect = $('#sortSelect');
+const visitBtn = $('#visitBtn');
+const gotoGalleryBtn = $('#gotoGalleryBtn');
+const openUploadBtn = $('#openUploadBtn');
+const fabUpload = $('#fabUpload');
+const uploadModal = $('#uploadModal');
+const uploadBack = $('#uploadBack');
+const closeUpload = $('#closeUpload');
+const submitUpload = $('#submitUpload');
+const uName = $('#uName');
+const uTitle = $('#uTitle');
+const uImage = $('#uImage');
+const uPrice = $('#uPrice');
+const topVoted = $('#topVoted');
+const latest = $('#latest');
+
+/* Initialize */
+yearSpan.textContent = new Date().getFullYear();
+
+/* Render helpers */
+function render(){
+  // apply search + sort
+  let q = searchInput.value.trim().toLowerCase();
+  let list = artworks.filter(a => (a.title + ' ' + (a.artist||'')).toLowerCase().includes(q));
+
+  const sort = sortSelect.value;
+  if(sort === 'popular') list.sort((a,b)=>b.votes-a.votes);
+  else if(sort === 'price-low') list.sort((a,b)=>a.price-b.price);
+  else list.sort((a,b)=> (b.created||0) - (a.created||0) ); // latest
+
+  galleryGrid.innerHTML = '';
+  if(list.length === 0){
+    emptyMsg.style.display = 'block';
+  } else {
+    emptyMsg.style.display = 'none';
+    list.forEach(a => galleryGrid.appendChild(makeCard(a)));
+  }
+
+  // update quick stats
+  const top = [...artworks].sort((x,y)=>y.votes-x.votes)[0];
+  topVoted.textContent = top ? `${top.title} (${top.votes})` : '—';
+  const last = artworks[artworks.length-1];
+  latest.textContent = last ? last.title : '—';
+}
+
+/* Card creation */
+function makeCard(a){
+  const el = document.createElement('div');
+  el.className = 'card';
+  el.innerHTML = `
+    <div class="badge">${a.artist || 'Unknown'}</div>
+    <img class="thumb" src="${a.img}" alt="${a.title}" loading="lazy">
+    <div class="card-body">
+      <div class="title">${escapeHtml(a.title)}</div>
+      <div class="meta">Price: $${a.price} • Votes: <strong id="v-${a.id}">${a.votes}</strong></div>
+      <div class="card-actions">
+        <button class="vote" aria-label="Vote for ${escapeHtml(a.title)}" data-id="${a.id}">▲ Vote</button>
+        <button class="buy" aria-label="Buy ${escapeHtml(a.title)}" data-id="${a.id}">Buy Print</button>
+      </div>
+    </div>
+  `;
+  // listeners
+  el.querySelector('.vote').addEventListener('click', ()=>{ handleVote(a.id); });
+  el.querySelector('.buy').addEventListener('click', ()=>{ openBuyModal(a.id); });
+  return el;
+}
+
+/* Vote logic */
+function handleVote(id){
+  const idx = artworks.findIndex(x => x.id === id);
+  if(idx === -1) return;
+  artworks[idx].votes = (artworks[idx].votes || 0) + 1;
+  saveArtworks(artworks);
+  // update count quickly without full re-render
+  const el = document.getElementById('v-' + id);
+  if(el) el.textContent = artworks[idx].votes;
+  // Also update quick stats
+  topVoted.textContent = `${artworks.sort((a,b)=>b.votes-a.votes)[0].title} (${artworks.sort((a,b)=>b.votes-a.votes)[0].votes})`;
+}
+
+/* Buy modal */
+function openBuyModal(id){
+  const art = artworks.find(x => x.id === id);
+  if(!art) return;
+  const buyModal = $('#buyModal');
+  buyModal.innerHTML = `
+    <div class="modal-back" id="buyBack">
+      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="buyTitle">
+        <h3 id="buyTitle">Buy Print - ${escapeHtml(art.title)}</h3>
+        <div style="display:flex;gap:12px;align-items:center">
+          <img src="${art.img}" alt="${escapeHtml(art.title)}" style="width:120px;height:80px;object-fit:cover;border-radius:8px">
+          <div>
+            <div style="font-weight:800">${escapeHtml(art.title)}</div>
+            <div style="color:var(--muted)">Artist: ${escapeHtml(art.artist||'Unknown')}</div>
+            <div style="margin-top:8px;font-weight:800">Price: $${art.price}</div>
+          </div>
+        </div>
+        <div class="actions">
+          <button class="btn ghost" id="cancelBuy">Cancel</button>
+          <button class="btn" id="confirmBuy">Checkout</button>
+        </div>
+      </div>
+    </div>
+  `;
+  buyModal.style.display = 'block';
+  $('#cancelBuy').addEventListener('click', ()=>{ buyModal.style.display='none'; buyModal.innerHTML=''; });
+  $('#confirmBuy').addEventListener('click', ()=>{
+    // placeholder for payment integration
+    alert('Thanks! Checkout placeholder — integrate Stripe/PayPal to accept payments.');
+    buyModal.style.display='none'; buyModal.innerHTML='';
+  });
+}
+
+/* Upload modal controls */
+function openUpload(){
+  uploadModal.style.display='block';
+  uploadModal.querySelector('.modal-back').style.display='flex';
+}
+function closeUploadModal(){
+  uploadModal.style.display='none';
+}
+
+function submitUploadHandler(){
+  const name = uName.value.trim() || 'Anonymous';
+  const title = uTitle.value.trim();
+  const img = uImage.value.trim();
+  const price = parseFloat(uPrice.value) || 20;
+
+  if(!title || !img){
+    alert('Please provide at least Title and Image URL.');
+    return;
+  }
+  const item = {
+    id: genId(),
+    title,
+    artist: name,
+    img,
+    votes: 0,
+    price,
+    created: Date.now()
+  };
+  artworks.push(item);
+  saveArtworks(artworks);
+  closeUploadModal();
+  uName.value='';uTitle.value='';uImage.value='';uPrice.value='';
+  alert('Uploaded! Your artwork is added to the gallery.');
+  render();
+}
+
+/* Utility: basic escape to avoid injecting tags into UI text */
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g,function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m];});
+}
+
+/* Listeners */
+visitBtn.addEventListener('click', ()=>{ window.scrollTo({top: document.querySelector('#gallerySection').offsetTop-20, behavior:'smooth'}); });
+gotoGalleryBtn.addEventListener('click', (e)=>{ e.preventDefault(); window.location.hash = '#gallerySection'; window.scrollTo({top: document.querySelector('#gallerySection').offsetTop-20, behavior:'smooth'}); });
+
+openUploadBtn.addEventListener('click', (e)=>{ e.preventDefault(); openUpload(); });
+fabUpload.addEventListener('click', openUpload);
+closeUpload.addEventListener('click', (e)=>{ e.preventDefault(); closeUploadModal(); });
+uploadBack.addEventListener('click', (e)=>{ if(e.target === uploadBack) closeUploadModal(); });
+submitUpload.addEventListener('click', submitUploadHandler);
+
+/* Search and sort */
+searchInput.addEventListener('input', ()=>{ render(); });
+sortSelect.addEventListener('change', ()=>{ render(); });
+
+/* initial render */
+render();
+
+/* Accessibility: close modals with Escape */
+document.addEventListener('keydown', (e)=>{
+  if(e.key === 'Escape'){
+    if(uploadModal.style.display === 'block') closeUploadModal();
+    const buy = $('#buyModal'); if(buy && buy.style.display==='block'){ buy.style.display='none'; buy.innerHTML=''; }
+  }
+});
+</script>
+<!-- ===== MODERN CONTACT US SECTION ===== -->
+<section id="contact" class="contact-section">
+  <div class="contact-wrapper">
+    <div class="contact-header">
+      <h2>Contact the Curator</h2>
+      <p>Have questions, feedback, or artwork inquiries? Reach out to us!</p>
+    </div>
+
+    <div class="contact-content">
+      <!-- Contact Form -->
+      <form id="contact-form" class="contact-form">
+        <input type="text" name="from_name" placeholder="Your Name" required>
+        <input type="number" name="from_number" placeholder="Your Number" required>
+        <textarea name="message" placeholder="Your Message..." required></textarea>
+        <button type="submit" id="send-btn">Send Message ✉️</button>
+      </form>
+
+      <!-- Optional Info / Social Links -->
+      <div class="contact-info">
+        <p>Or reach us on:</p>
+        <div class="social-links">
+          <a href="mailto:curator@artgalaxy.com">📧 Email</a>
+          <a href="https://instagram.com/artgalaxy" target="_blank">📸 Instagram</a>
+          <a href="https://twitter.com/artgalaxy" target="_blank">🐦 Twitter</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== CONTACT CSS ===== -->
+<style>
+:root {
+  --accent1: #ff6b6b;
+  --accent2: #7c5cff;
+  --bg1: #0b0c1b;
+  --bg2: #1c1e30;
+  --muted: #aaa;
+}
+
+.contact-section {
+  background: linear-gradient(135deg, var(--bg2), var(--bg1));
+  padding: 80px 20px;
+  display: flex;
+  justify-content: center;
+}
+
+.contact-wrapper {
+  max-width: 700px;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(8px);
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  padding: 40px 30px;
+  color: #fff;
+}
+
+.contact-header h2 {
+  font-size: 2.2rem;
+  color: #00e6e6;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+.contact-header p {
+  color: var(--muted);
+  margin-bottom: 30px;
+  text-align: center;
+  font-size: 1rem;
+}
+
+.contact-content {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Form */
+.contact-form input,
+.contact-form textarea {
+  width: 100%;
+  padding: 14px 16px;
+  margin-bottom: 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.02);
+  color: #fff;
+  font-size: 1rem;
+  outline: none;
+  transition: 0.3s ease;
+}
+
+.contact-form input:focus,
+.contact-form textarea:focus {
+  border-color: var(--accent2);
+  background: rgba(255,255,255,0.05);
+}
+
+.contact-form textarea {
+  resize: none;
+  min-height: 140px;
+}
+
+#send-btn {
+  width: 100%;
+  padding: 16px;
+  border: none;
+  border-radius: 14px;
+  background: linear-gradient(90deg, var(--accent2), var(--accent1));
+  font-weight: 700;
+  font-size: 1rem;
+  color: #000;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+#send-btn:hover {
+  transform: scale(1.05);
+  background: linear-gradient(90deg, #00e6e6, var(--accent2));
+}
+
+/* Contact Info / Social Links */
+.contact-info {
+  text-align: center;
+  margin-top: 20px;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.social-links {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 8px;
+}
+
+.social-links a {
+  color: var(--accent1);
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.3s ease;
+}
+
+.social-links a:hover {
+  color: var(--accent2);
+}
+
+/* Responsive */
+@media(max-width: 600px) {
+  .contact-wrapper {
+    padding: 30px 20px;
+  }
+}
+</style>
+
+<section id="contact" class="contact-section">
+  <div class="contact-container">
+    <h2>Contact Us on WhatsApp 📱</h2>
+    <p>Have a question? Message us directly!</p>
+
+    <form id="whatsappForm">
+      <input type="text" id="name" placeholder="Your Name" required>
+      <input type="text" id="msg" placeholder="Your Message" required>
+      <button type="submit" id="sendBtn">Send on WhatsApp 💬</button>
+    </form>
+  </div>
+</section>
+
+<script>
+document.getElementById("whatsappForm").addEventListener("submit", function(e){
+  e.preventDefault();
+  
+  let name = document.getElementById("name").value;
+  let msg = document.getElementById("msg").value;
+  
+  // Your WhatsApp number here (use country code, e.g. 91 for India)
+  let phoneNumber = "91 8838521523"; 
+  
+  // Create message text
+  let message = `Hello, I'm ${name}. ${msg}`;
+  
+  // Redirect to WhatsApp chat
+  let url = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+  window.open(url, "_blank");
+});
+</script>
+  </main>
+
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
